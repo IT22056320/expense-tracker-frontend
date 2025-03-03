@@ -38,7 +38,6 @@ export const ExpenseDashboard = () => {
     const handleUpdateExpense = async (id: string, expense: Expense) => {
         try {
             await ExpenseService.updateExpense(id, expense);
-            setExpenses([...expenses, expense]);
             setOpenModal(false);
         } catch (error) {
             console.error(error);
@@ -62,6 +61,31 @@ export const ExpenseDashboard = () => {
     useEffect(() => {
         fetchExpenses();
     }, []);
+
+    const renderExpenses = (category: CategoryKey | null) => {
+        if (category !== null) {
+            return filteredExpenses.map((expense) => (
+                <ExpenseCard expense={expense} onEditClick={(expense) => {
+                    setMode("edit");
+                    setOpenModal(true);
+                    setSelectedExpense(expense);
+                }} onDeleteClick={async (id) => {
+                    await handleDeleteExpense(id);
+                }} />
+            ))
+        } else {
+            return expenses.map((expense) => (
+                <ExpenseCard expense={expense} onEditClick={(e) => {
+                    console.log(e);
+                    setSelectedExpense(e);
+                    setMode("edit");
+                    setOpenModal(true);
+                }} onDeleteClick={async (id) => {
+                    await handleDeleteExpense(id);
+                }} />
+            ))
+        }
+    }
 
     return (
         <Box width={800} mx="auto">
@@ -88,6 +112,7 @@ export const ExpenseDashboard = () => {
                     </Select>
                 </FormControl>
                 <Button variant="contained" color="primary" onClick={() => {
+                    setSelectedExpense(undefined);
                     setMode("create");
                     setOpenModal(true)
                 }}>
@@ -95,34 +120,14 @@ export const ExpenseDashboard = () => {
                 </Button>
             </Box>
             <Box display="flex" justifyContent="space-between" alignItems="center" width="100%" mt={4}>
-                {
-                    // category && (filteredExpenses.map((expense) => (
-                    //     <ExpenseCard expense={expense} onEditClick={(expense) => {
-                    //         setMode("edit");
-                    //         setOpenModal(true);
-                    //         setSelectedExpense(expense);
-                    //     }} onDeleteClick={async (id) => {
-                    //         await handleDeleteExpense(id);
-                    //     }} />
-                    // )) || 
-                    // )
-                    expenses.map((expense) => (
-                        <ExpenseCard expense={expense} onEditClick={(e) => {
-                            console.log(e);
-                            setSelectedExpense(e);
-                            setMode("edit");
-                            setOpenModal(true);
-                        }} onDeleteClick={async (id) => {
-                            await handleDeleteExpense(id);
-                        }} />
-                    ))
-                }
+                {renderExpenses(category)}
             </Box>
-            <ExpenseModal mode={mode} open={openModal} onClose={() => setOpenModal(false)} expense={selectedExpense} onSubmit={async (mode, expense) => {
-                if (mode === "create") {
+            <ExpenseModal mode={mode} open={openModal} onClose={() => setOpenModal(false)} expense={selectedExpense} onSubmit={async (m, expense) => {
+                if (m === "create") {
                     await handleCreateExpense(expense);
                 } else {
                     await handleUpdateExpense(expense.id, expense);
+                    await fetchExpenses();
                 }
             }} />
         </Box>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Modal,
     Box,
@@ -27,9 +27,18 @@ interface ExpenseModalProps {
 }
 
 const ExpenseModal: React.FC<ExpenseModalProps> = ({ mode = "create", expense, open, onClose, onSubmit }) => {
-    const [title, setTitle] = useState(expense?.title || "");
-    const [category, setCategory] = useState(expense?.category || null);
-    const [description, setDescription] = useState(expense?.description || "");
+
+    useEffect(() => {
+        setTitle(expense?.title);
+        setCategory(expense?.category);
+        setDescription(expense?.description);
+        setDate(expense ? dayjs(expense.date) : null);
+        setAmount(expense?.amount);
+    }, [expense]);
+
+    const [title, setTitle] = useState(expense?.title);
+    const [category, setCategory] = useState(expense?.category);
+    const [description, setDescription] = useState(expense?.description);
     const [date, setDate] = useState<Dayjs | null>(expense ? dayjs(expense.date) : null);
     const [amount, setAmount] = useState(expense?.amount);
 
